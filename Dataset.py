@@ -8,9 +8,11 @@ import torch
 from nltk.tokenize import wordpunct_tokenize
 
 class MyDataset(Dataset):
-    def __init__(self, data_path, filter_pair=True, max_length = 25, min_length = 3, max_word_length=27, train=True):
+    def __init__(self, data_path, filter_pair=True, max_length = 20, min_length = 3, max_word_length=20, train=True):
         self.data_path = data_path
-        self.vocabulary = list(""" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,;.!?:'\"/\\|_@#$%^&*~`+-=<>()[]{}""")
+        # self.vocabulary = list("""ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,;.!?:'\"/\\|_@#$%^&*~`+-=<>()[]{}""")
+        # no punc:
+        self.vocabulary = list("""ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789""")
         self.char_dic = {}
         for i in range(len(self.vocabulary)):
             self.char_dic[self.vocabulary[i]] = i+3 #0 for pad, 1 for start , 2 for end
@@ -32,6 +34,7 @@ class MyDataset(Dataset):
             self.filter_pairs()
             print("Filtered to %d pairs" % len(self.pairs))
         self.length = len(self.pairs)
+        
         print("Indexing words...")
         for i in range(self.length):
             self.pairs[i] = wordpunct_tokenize(self.pairs[i][0]), wordpunct_tokenize(self.pairs[i][1])
@@ -52,6 +55,7 @@ class MyDataset(Dataset):
         filtered_pairs = []
         for pair in self.pairs:
             if len(pair[0].split()) >= self.MIN_LENGTH and len(wordpunct_tokenize(pair[0])) <= self.MAX_LENGTH:
+                if all([len(token) <= self.max_word_length-2 for token in pair[0]]):
                     filtered_pairs.append(pair)
         self.pairs = filtered_pairs
 

@@ -36,7 +36,6 @@ def show_plot_visdom():
         attn_images = attn_images[1:]+[img]
     else:
         attn_images += [img]
-        print (attn_images[0].shape)
     vis.image(torch.cat(attn_images, dim=1), win=attn_win, opts={'title': attn_win})
 
 def show_attention(input_words, output_words, attentions):
@@ -81,7 +80,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Correction classifier')
     parser.add_argument('--train', '-t', required=True, type=str, help='file to train')
     parser.add_argument('--test', type=str, help='file to test')
-    parser.add_argument('--load', type=str, help='model to resume')
+    parser.add_argument('--load_en', type=str, help='encoder model to resume')
+    parser.add_argument('--load_de', type=str, help='decoder model to resume')
     parser.add_argument('--max_length', type=int, default=25, help='max word length')
     parser.add_argument('--batch_size', type=int, default=64, help='batch size')
     parser.add_argument('--elr', type=float, default=1e-4, help='encoder learning rate')
@@ -314,10 +314,12 @@ def main(args):
     encoder.cuda()
     decoder.cuda()
 
-    if args.load:
-        state = torch.load(args.load)
-        model.load_state_dict(state)
-        print('Loading parameters from {}'.format(args.load))
+    if args.load_en and args.load_de:
+        state_en = torch.load(args.load_en)
+        state_de = torch.load(args.load_de)
+        encoder.load_state_dict(state_en)
+        decoder.load_state_dict(state_de)
+        print('Loading parameters from {} {}'.format(args.load_en, args.load_de))
 
     encoder_optimizer = optim.Adam(encoder.parameters(), lr=args.elr)
     decoder_optimizer = optim.Adam(decoder.parameters(), lr=args.dlr)
@@ -338,7 +340,8 @@ def main(args):
             if acc > best_acc:
                 best_acc = acc
                 ind = '*'
-                torch.save(model.state_dict(), 'best.pth')
+                torch.save(encoder.state_dict(), 'best_en_5out.pth')
+                torch.save(decoder.state_dict(), 'best_de_5out.pth')
             print('----Validation:\tavg.loss={:.4f}\tavg.acc={:.4f}{}'.format(loss, acc, ind))
     print('Best Accuracy: {}'.format(best_acc))
 
