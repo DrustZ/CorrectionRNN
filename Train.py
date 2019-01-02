@@ -36,7 +36,6 @@ def show_plot_visdom():
         attn_images = attn_images[1:]+[img]
     else:
         attn_images += [img]
-        print (attn_images[0].shape)
     vis.image(torch.cat(attn_images, dim=1), win=attn_win, opts={'title': attn_win})
 
 def show_attention(input_words, output_words, attentions):
@@ -81,8 +80,9 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Correction classifier')
     parser.add_argument('--train', '-t', required=True, type=str, help='file to train')
     parser.add_argument('--test', type=str, help='file to test')
-    parser.add_argument('--load', type=str, help='model to resume')
-    parser.add_argument('--max_length', type=int, default=25, help='max word length')
+    parser.add_argument('--load_en', type=str, help='encoder model to resume')
+    parser.add_argument('--load_de', type=str, help='decoder model to resume')
+    parser.add_argument('--max_length', type=int, default=20, help='max word length')
     parser.add_argument('--batch_size', type=int, default=64, help='batch size')
     parser.add_argument('--elr', type=float, default=1e-4, help='encoder learning rate')
     parser.add_argument('--dlr', type=float, default=5e-4, help='decoder learning rate')
@@ -137,7 +137,7 @@ def correct(output, target, target_lengths):
         acc += target[i, :target_lengths[i]].eq(output[i, :target_lengths[i]]).float().mean()
     return acc
 
-def eval_randomly(test_dataset, encoder, decoder, max_length=22):
+def eval_randomly(test_dataset, encoder, decoder, max_length=20): #changed to 20 max
     pair = test_dataset.pairs[random.randint(0, len(test_dataset)-1)]
     input_seq = pair[0]
     input_seqs = [test_dataset.indexes_from_sentence_char_to_word(input_seq)]
@@ -297,12 +297,12 @@ def train(train_data, encoder, decoder, encoder_optimizer, decoder_optimizer, te
 
 def main(args):
     cudnn.benchmark = True
-    train_dataset = MyDataset(args.train, filter_pair=True, max_length = 22, min_length = 3, max_word_length=args.max_length)
+    train_dataset = MyDataset(args.train, filter_pair=True, max_length = args.max_length, min_length = 3, max_word_length=args.max_length)
     voc_size = train_dataset.n_words
     train_data = DataLoader(train_dataset, batch_size=args.batch_size, pin_memory=True,
                             shuffle=True, num_workers=2, collate_fn=collate_fn())
 
-    test_dataset = MyDataset(args.train, filter_pair=True, max_length = 22, min_length = 3, max_word_length=args.max_length, train=False)
+    test_dataset = MyDataset(args.train, filter_pair=True, max_length = args.max_length, min_length = 3, max_word_length=args.max_length, train=False)
     test_data = DataLoader(test_dataset, batch_size=args.batch_size, pin_memory=True,
                             shuffle=True, num_workers=2, collate_fn=collate_fn())
 
@@ -314,10 +314,14 @@ def main(args):
     encoder.cuda()
     decoder.cuda()
 
-    if args.load:
-        state = torch.load(args.load)
-        model.load_state_dict(state)
-        print('Loading parameters from {}'.format(args.load))
+    if args.load_en:
+        state_en = torch.load(args.load_en)
+        encoder.load_state_dict(state_en)
+        print('Loading parameters from {}'.format(args.load_en))
+
+    if args.load_de:
+        state_de = torch.load(args.load_de)
+        decoder.load_state_dict(state_de)
 
     encoder_optimizer = optim.Adam(encoder.parameters(), lr=args.elr)
     decoder_optimizer = optim.Adam(decoder.parameters(), lr=args.dlr)
@@ -338,7 +342,8 @@ def main(args):
             if acc > best_acc:
                 best_acc = acc
                 ind = '*'
-                torch.save(model.state_dict(), 'best.pth')
+                torch.save(encoder.state_dict(), 'best_en_5out_amazon.pth')
+                torch.save(decoder.state_dict(), 'best_de_5out_amazon.pth')
             print('----Validation:\tavg.loss={:.4f}\tavg.acc={:.4f}{}'.format(loss, acc, ind))
     print('Best Accuracy: {}'.format(best_acc))
 
