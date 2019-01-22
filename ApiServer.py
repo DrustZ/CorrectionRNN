@@ -269,7 +269,7 @@ class MainHandler(tornado.web.RequestHandler):
                     max_cnt = cnt1
                     most_idx = (i, 0)
                 
-                if i+5 < len(tokens):
+                if i+5 <= len(tokens):
                     compares2 = list(zip(tokens[i:i+2]+tokens[i+3:i+5], tmpres)) #change a exsiting word
                     cnt2 = sum([(pair[0] == pair[1]) for pair in compares2])
                     if cnt2 > max_cnt:
@@ -353,6 +353,6 @@ if __name__ == "__main__":
 '''
 curl --header "Content-Type: application/json" \
   --request POST \
-  --data '{"smart":1,"sent":"", "correction":""}' \
-  http://localhost:3000/api/login
+  --data '{"smart":0,"sent":"this is the best thin I ve ever done", "correction":"thing"}' \
+  10.0.0.55:8765
 '''
