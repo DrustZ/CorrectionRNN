@@ -91,6 +91,8 @@ def parse_arguments():
     parser.add_argument('--dropout', type=float, default=0.2, help='dropout rate')
     parser.add_argument('--n_layers', type=int, default=2, help="number of layers of GRU")
     parser.add_argument('--hidden_size', type=int, default=300, help="hidden size")
+    parser.add_argument('--freq_threshold', type=int, default=0, help="word freq threshold")
+    parser.add_argument('--only_lowercase', type=int, default=0, help="only lower case")
     global args
     args = parser.parse_args()
     return args    
@@ -98,9 +100,11 @@ def parse_arguments():
 def setup():
     eprint("loading...")
     cudnn.benchmark = True
-    test_dataset = MyDataset(args.train, filter_pair=True, max_length = mlength, min_length = 3, max_word_length=args.max_length)
+    test_dataset = MyDataset(args.train, filter_pair=True, max_length = mlength, min_length = 3, \
+                    max_word_length=args.max_length, freq_threshold=args.freq_threshold,\
+                    onlylower=(args.only_lowercase>0), load_fprefix="dataset_freq2_")
     voc_size = test_dataset.n_words
-    
+        
     encoder = C2WEncoderRNN(args.hidden_size, args.n_layers, dropout=args.dropout)
     decoder = BahdanauAttnDecoderRNN(voc_size, args.hidden_size, args.n_layers, dropout=args.dropout)
     eprint(encoder)
@@ -234,7 +238,10 @@ def evalFile(fname, encoder, decoder, dataset):
     with open(fname) as f:
         lines = f.readlines()
         for i, line in enumerate(tqdm(lines, leave=False)):
-            sent, label = line.strip().split("\t")
+            if args.only_lowercase:
+                sent, label = line.lower().strip().split("\t")
+            else:
+                sent, label = line.strip().split("\t")
             lword = sent.split()[-1]
             # sent = sent[2:]
             if len(sent.split()) <= 3:
@@ -252,16 +259,16 @@ if __name__ == "__main__":
     try:
         args = parse_arguments()
         encoder, decoder, dataset = setup()
-        # evalFile("/media/ray/My_Passport/ubuntu/codes/DragCorrect/DatasetProcessing/conll5", encoder, decoder, dataset)
-        # evalFile("wiki.validate5", encoder, decoder, dataset)
-        evalFile("testexp", encoder, decoder, dataset)
+        evalFile("/media/ray/My_Passport/ubuntu/codes/DragCorrect/DatasetProcessing/conll_valid5", encoder, decoder, dataset)
+        evalFile("wiki.validate5", encoder, decoder, dataset)
+        # evalFile("test_exp_sub", encoder, decoder, dataset)
         # evalFileBatch("testdata_eval")
-        # evalFile("/media/ray/My_Passport/ubuntu/codes/DragCorrect/DatasetProcessing/conll5")
+        evalFile("exp.validate", encoder, decoder, dataset)
         
         # while True:
-        #     sent = input('Enter a sent: [no punc, cor at last]; "quit" to quit\n')
-        #     if sent == "quit":
-        #         break
-        #     print (eval_randomly(sent.strip(), dataset, encoder, decoder))
+        #      sent = input('Enter a sent: [no punc, cor at last]; "quit" to quit\n')
+        #      if sent == "quit":
+        #          break
+        #      print (eval_randomly(sent.strip(), dataset, encoder, decoder))
     except KeyboardInterrupt as e:
         eprint("[STOP]", e)

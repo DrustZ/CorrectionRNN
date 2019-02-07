@@ -19,8 +19,8 @@ import numpy as np
 import io
 import torchvision
 from PIL import Image
-import visdom
-vis = visdom.Visdom()
+# import visdom
+# vis = visdom.Visdom()
 
 attn_images = []
 
@@ -94,6 +94,8 @@ def parse_arguments():
     parser.add_argument('--test_freq', type=int, default=5, help='test every * epochs')
     parser.add_argument('--n_layers', type=int, default=2, help="number of layers of GRU")
     parser.add_argument('--hidden_size', type=int, default=300, help="hidden size")
+    parser.add_argument('--freq_threshold', type=int, default=0, help="word freq threshold")
+    parser.add_argument('--only_lowercase', type=int, default=0, help="only lower case")
     parser.add_argument('--teacher_forcing_ratio', '-teacher', type=float, default=0.5, help="teacher_forcing_ratio")    
     global args
     args = parser.parse_args()
@@ -182,7 +184,7 @@ def eval_randomly(test_dataset, encoder, decoder, max_length=20): #changed to 20
             decoder_input = decoder_input.cuda()
 
         target_sentence = pair[1]
-        evaluate_and_show_attention(input_seq, target_sentence, decoded_words, decoder_attentions)
+        # evaluate_and_show_attention(input_seq, target_sentence, decoded_words, decoder_attentions)
     
 
 def evaluate(test_data, encoder, decoder):
@@ -297,12 +299,16 @@ def train(train_data, encoder, decoder, encoder_optimizer, decoder_optimizer, te
 
 def main(args):
     cudnn.benchmark = True
-    train_dataset = MyDataset(args.train, filter_pair=True, max_length = args.max_length, min_length = 3, max_word_length=args.max_length)
+    train_dataset = MyDataset(args.train, filter_pair=True, max_length = args.max_length, \
+                            min_length = 3, max_word_length=args.max_length, \
+                            freq_threshold=args.freq_threshold, onlylower=(args.only_lowercase>0) )
     voc_size = train_dataset.n_words
     train_data = DataLoader(train_dataset, batch_size=args.batch_size, pin_memory=True,
                             shuffle=True, num_workers=2, collate_fn=collate_fn())
 
-    test_dataset = MyDataset(args.train, filter_pair=True, max_length = args.max_length, min_length = 3, max_word_length=args.max_length, train=False)
+    test_dataset = MyDataset(args.train, filter_pair=True, max_length = args.max_length, \
+                            min_length = 3, max_word_length=args.max_length, train=False, \
+                            freq_threshold=args.freq_threshold, onlylower=(args.only_lowercase>0) )
     test_data = DataLoader(test_dataset, batch_size=args.batch_size, pin_memory=True,
                             shuffle=True, num_workers=2, collate_fn=collate_fn())
 
@@ -342,8 +348,8 @@ def main(args):
             if acc > best_acc:
                 best_acc = acc
                 ind = '*'
-                torch.save(encoder.state_dict(), 'best_en_5out_amazon.pth')
-                torch.save(decoder.state_dict(), 'best_de_5out_amazon.pth')
+                torch.save(encoder.state_dict(), 'best_en_5out_freq2.pth')
+                torch.save(decoder.state_dict(), 'best_de_5out_freq2.pth')
             print('----Validation:\tavg.loss={:.4f}\tavg.acc={:.4f}{}'.format(loss, acc, ind))
     print('Best Accuracy: {}'.format(best_acc))
 
