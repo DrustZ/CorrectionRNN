@@ -31,9 +31,10 @@ EOS_token = 2
 MAX_W_LENGTH=20
 N_LAYERS  = 2
 HIDDEN_SIZE = 300
-SET_DIR = "small_train_data5_amazon"
-EN_DIR = "best_en_5out_amazon.pth"
-DE_DIR = "best_de_5out_amazon.pth"
+SET_DIR = "train_data5"#"small_train_data5_amazon"
+LOAD_PREF = "dataset_freq2_"
+EN_DIR = "best_en_5out_freq2.pth"#"best_en_5out_amazon.pth"
+DE_DIR = "best_de_5out_freq2.pth"
 
 ENCODER = None
 DECODER = None
@@ -97,7 +98,8 @@ def eval_sent(input_seq):
 def setup():
     global ENCODER, DECODER, DATASET
     cudnn.benchmark = True
-    DATASET = MyDataset(SET_DIR, filter_pair=True, max_length = 20, min_length = 3, max_word_length=MAX_W_LENGTH)
+    DATASET = MyDataset(SET_DIR, filter_pair=True, max_length = 20, min_length = 3, \
+        max_word_length=MAX_W_LENGTH, load_fprefix=LOAD_PREF, onlylower=True, freq_threshold=2)
     voc_size = DATASET.n_words
     
     ENCODER = C2WEncoderRNN(HIDDEN_SIZE, N_LAYERS, dropout=0)
@@ -277,7 +279,7 @@ class MainHandler(tornado.web.RequestHandler):
                         most_idx = (i, 1)
             return most_idx
         #predict corrections here
-        tokens = text.translate(table).split()
+        tokens = text.lower().translate(table).split()
         errsent = ' '.join(tokens)
         correction = ' '.join(correction.translate(table).split())
 
@@ -286,7 +288,7 @@ class MainHandler(tornado.web.RequestHandler):
         sub_score = []
         for i in range(len(tokens)):
             token = tokens[i]
-            offset = text.find(token, offset)
+            offset = text.lower().find(token, offset)
             token_offset.append(offset)
             offset += len(token)
             if token != correction:
