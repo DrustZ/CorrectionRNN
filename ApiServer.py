@@ -258,7 +258,7 @@ class MainHandler(tornado.web.RequestHandler):
     @gen.coroutine
     def getResponseOneLine(self, text, correction):
         def align_correction(tokens, res, correction):
-            tokens = ["BOS", "BOS"] + tokens + ["EOS", "EOS"]
+            tokens = ["bos", "bos"] + tokens + ["eos", "eos"]
             most_idx = (-1, -1)
             max_cnt = 0
 
@@ -278,6 +278,7 @@ class MainHandler(tornado.web.RequestHandler):
                         max_cnt = cnt2
                         most_idx = (i, 1)
             return most_idx
+
         #predict corrections here
         tokens = text.lower().translate(table).split()
         errsent = ' '.join(tokens)
@@ -296,13 +297,12 @@ class MainHandler(tornado.web.RequestHandler):
             else:
                 sub_score.append(0)
         sub_score = np.array(sub_score)
-
         lemma_score = getLemmarScores(tokens, correction)
 
         find = False
         #First, editdist
-        if max(sub_score[1:-1]) >= 0.7:
-            idx = sub_score[1:-1].argmax()+1
+        if len(sub_score) > 1 and max(sub_score) >= 0.7:
+            idx = sub_score.argmax()
             pos = (token_offset[idx], len(tokens[idx]))
             if not tokens[idx].lower() == correction.lower():
                 find = True
