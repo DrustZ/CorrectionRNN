@@ -4,7 +4,7 @@ This is the code repo for the UIST 2019 paper [Type, Then Correct: Intelligent T
 # Training Data Processing
 To get the training data for the network, we used [the CoNLL correction tasks data](https://www.conll.org/previous-tasks), year 13-14. You can go to `DataProcess/CoNLL` to check out the related processing code.
 
-We also used the Yelp+Amazon review data, you can find it (here)[https://drive.google.com/drive/u/0/folders/0Bz8a_Dbh9Qhbfll6bVpmNUtUcFdjYmF2SEpmZUZUcVNiMUw1TWN6RDV3a0JHT3kxLVhVR2M] (related github project: https://github.com/nhviet1009/Character-level-cnn-pytorch). For those datasets, because they're usually good text without errors, we performed perturbation (injecting errors). The details could be found under `DataProcess/PerturbNormalDataset`
+We also used the Yelp+Amazon review data, you can find it [here](https://drive.google.com/drive/u/0/folders/0Bz8a_Dbh9Qhbfll6bVpmNUtUcFdjYmF2SEpmZUZUcVNiMUw1TWN6RDV3a0JHT3kxLVhVR2M) (related github project: https://github.com/nhviet1009/Character-level-cnn-pytorch). For those datasets, because they're usually good text without errors, we performed perturbation (injecting errors). The details could be found under `DataProcess/PerturbNormalDataset`
 
 # Training & Testing
 The training format of the data is provided in the example file under `DataProcess`. Each training example is composed of text with errors plus the correction, and the expected output. For the output format, please refer to our paper for more details.
@@ -13,7 +13,7 @@ The training format of the data is provided in the example file under `DataProce
 We also provided a script for you to deploy this correction algorithm on servers. You can use HTTP protocol to make requests & responses.
 
 # Demo
-Here's a video demo 
+[Here's a video demo ](https://www.youtube.com/watch?v=2184mZlGTGA)
 [![Type Then Correct](https://img.youtube.com/vi/2184mZlGTGA/0.jpg)](https://www.youtube.com/watch?v=2184mZlGTGA)
 
 # Required Libraries
