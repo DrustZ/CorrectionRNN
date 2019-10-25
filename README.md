@@ -18,6 +18,7 @@ We also provided a script for you to deploy this correction algorithm on servers
 
 # Required Libraries
 Please install `numpy`, `nltk`, `symspellpy`, `Beautiful Soup 4` for data processing
+
 And the Neural Network file uses `Pytorch version 0.4.1`. 
 
 ## Citation
