@@ -9,6 +9,13 @@ We also used the Yelp+Amazon review data, you can find it [here](https://drive.g
 # Training & Testing
 The training format of the data is provided in the example file under `DataProcess`. Each training example is composed of text with errors plus the correction, and the expected output. For the output format, please refer to our paper for more details.
 
+```
+python Train.py --train small_train_data5_amazon --batch_size 128 --test small_train_data5_amazon --elr 1e-4 --dlr 5e-4 --epochs 20 -teacher 0.5 --test_freq 1 --dropout 0.2 --clip 10 --hidden_size 300 --load_en best_en_5out_amazon.pth  --only_lowercase 1
+```
+``small_train_data5_amazon`` is our training data file; ``elr/dlr`` is encoder/decoder learning rate; ``teacher`` is the teacher rate.
+
+You can find our trained model and the training data [here]()
+
 # Deploy
 We also provided a script for you to deploy this correction algorithm on servers. You can use HTTP protocol to make requests & responses.
 
