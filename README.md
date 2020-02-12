@@ -14,7 +14,7 @@ python Train.py --train small_train_data5_amazon --batch_size 128 --test small_t
 ```
 ``small_train_data5_amazon`` is our training data file; ``elr/dlr`` is encoder/decoder learning rate; ``teacher`` is the teacher rate.
 
-You can find our trained model and the training data [here]()
+You can find our trained model and the training data [here](https://drive.google.com/open?id=1wrXZNquuvCiyf1V3na9v5khG2BlNelrU)
 
 # Deploy
 We also provided a script for you to deploy this correction algorithm on servers. You can use HTTP protocol to make requests & responses.
