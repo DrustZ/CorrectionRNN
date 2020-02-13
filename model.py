@@ -5,16 +5,16 @@ from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence#, masked_cross_entropy
 
 class C2WEncoderRNN(nn.Module):
-    def __init__(self, hidden_size, n_layers=1, dropout=0.5, num_char = 98, char_emb_dim=15):
+    def __init__(self, hidden_size, n_layers=1, dropout=0.5, num_char = 65, char_emb_dim=15):
         super(C2WEncoderRNN, self).__init__()
         self.hidden_size = hidden_size
-        self.embed_size = 200
+        self.embed_size = 300
         self.n_layers = n_layers
         self.dropout = dropout
         self.attn = Attn('concat', hidden_size)
         self.char_embed = nn.Embedding(num_char, char_emb_dim)
         # list of tuples: (the number of filter, width)
-        self.filter_num_width = [(15, 1), (30, 2), (50, 3), (50, 4), (55, 5)]
+        self.filter_num_width = [(25, 1), (50, 2), (75, 3), (75, 4), (75, 5)]
         self.convolutions = nn.ModuleList()
         for out_channel, filter_width in self.filter_num_width:
             self.convolutions.append(nn.Conv1d(char_emb_dim, out_channel, kernel_size=filter_width, padding=0))
@@ -62,14 +62,6 @@ class C2WEncoderRNN(nn.Module):
         outputs, hidden = self.gru(packed, hidden)
         outputs, output_lengths = torch.nn.utils.rnn.pad_packed_sequence(outputs)  # unpack (back to padded)
         outputs = outputs[:, :, :self.hidden_size] + outputs[:, :, self.hidden_size:]  # Sum bidirectional outputs
-        
-        corrections = torch.cat([outputs[idx1-1, idx2].unsqueeze(0) for idx1, idx2 in zip(input_lengths, range(B))])
-        corrections = corrections.unsqueeze(0)
-        
-        #attention to correction : model 1
-#         attn_weights = self.attn(corrections, outputs)
-#         attn_weights = attn_weights.squeeze(dim=1).unsqueeze(2).transpose(0,1)# (T, B, 1)
-#         outputs = attn_weights * outputs
         
         return outputs, hidden
     
@@ -125,7 +117,7 @@ class BahdanauAttnDecoderRNN(nn.Module):
         super(BahdanauAttnDecoderRNN, self).__init__()
         # Define parameters
         self.hidden_size = hidden_size
-        self.embed_size = 200
+        self.embed_size = 300
         self.output_size = output_size
         self.n_layers = n_layers
         self.dropout = dropout

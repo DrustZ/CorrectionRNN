@@ -249,9 +249,10 @@ def evalFile(fname, encoder, decoder, dataset):
             cnt += 1
             pre = eval_randomly(sent, dataset, encoder, decoder)
             if not equal_pre(label, pre, lword):
-                print ("[wrong] %s\n[lb] %s\n[pr] %s" % (sent, label, pre))
+                # print ("[wrong] %s\n[lb] %s\n[pr] %s" % (sent, label, pre))
+                pass
             else:
-                # print ("[right] %s\n[lb] %s\n[pr] %s" % (sent, label, pre))
+                print ("[right] %s\n[lb] %s\n[pr] %s" % (sent, label, pre))
                 right += 1
     print ("acc :", right/cnt)
 
@@ -259,16 +260,16 @@ if __name__ == "__main__":
     try:
         args = parse_arguments()
         encoder, decoder, dataset = setup()
-        evalFile("/media/ray/My_Passport/ubuntu/codes/DragCorrect/DatasetProcessing/conll_valid5", encoder, decoder, dataset)
-        evalFile("wiki.validate5", encoder, decoder, dataset)
+        # evalFile("/media/ray/My_Passport/ubuntu/codes/DragCorrect/DatasetProcessing/conll_valid5", encoder, decoder, dataset)
+        # evalFile("wiki.validate5", encoder, decoder, dataset)
         # evalFile("test_exp_sub", encoder, decoder, dataset)
         # evalFileBatch("testdata_eval")
-        evalFile("exp.validate", encoder, decoder, dataset)
+        # evalFile("exp.validate", encoder, decoder, dataset)
         
-        # while True:
-        #      sent = input('Enter a sent: [no punc, cor at last]; "quit" to quit\n')
-        #      if sent == "quit":
-        #          break
-        #      print (eval_randomly(sent.strip(), dataset, encoder, decoder))
+        while True:
+             sent = input('Enter a sent: [no punc, cor at last]; "quit" to quit\n')
+             if sent == "quit":
+                 break
+             print (eval_randomly(sent.strip(), dataset, encoder, decoder))
     except KeyboardInterrupt as e:
         eprint("[STOP]", e)
